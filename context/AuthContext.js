@@ -11,12 +11,10 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
     const router = useRouter()
 
-    // Check if user is logged in on mount
     useEffect(() => {
         checkUserLoggedIn()
     }, [])
 
-    // Check if user is logged in
     const checkUserLoggedIn = async () => {
         const token = Cookies.get('token')
         
@@ -36,12 +34,11 @@ export const AuthProvider = ({ children }) => {
                 const userData = await res.json()
                 setUser(userData)
             } else {
-                // Token invalid, clear it
                 Cookies.remove('token')
                 setUser(null)
             }
         } catch (error) {
-            console.error('Error checking auth:', error)
+            console.error(error)
             Cookies.remove('token')
             setUser(null)
         }
@@ -49,7 +46,6 @@ export const AuthProvider = ({ children }) => {
         setLoading(false)
     }
 
-    // Register user
     const register = async ({ username, email, password }) => {
         try {
             const res = await fetch(`${API_URL}/api/auth/local/register`, {
@@ -66,8 +62,6 @@ export const AuthProvider = ({ children }) => {
                 return
             }
 
-            // ✅ PERBAIKAN: Auto login after register
-            // Strapi v4 mengembalikan JWT dan user saat register
             if (data.jwt && data.user) {
                 Cookies.set('token', data.jwt, { 
                     expires: 7, 
@@ -76,23 +70,20 @@ export const AuthProvider = ({ children }) => {
                     path: '/',
                 })
                 setUser(data.user)
-                toast.success('✅ Registration successful!')
+                toast.success('Registration successful')
                 router.push('/account/dashboard')
             } else {
                 toast.success('Registration successful, please login')
                 router.push('/account/login')
             }
         } catch (error) {
-            console.error('Registration error:', error)
-            toast.error('Registration failed. Please try again.')
+            console.error(error)
+            toast.error('Registration failed')
         }
     }
 
-    // Login user
     const login = async ({ email, password }) => {
         const loginUrl = `${API_URL}/api/auth/local`
-        
-        console.log('🔐 Attempting login...')
         
         try {
             const res = await fetch(loginUrl, {
@@ -101,33 +92,19 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ identifier: email, password }),
             })
             
-            console.log('📡 Response Status:', res.status)
-            
             if (!res.ok) {
                 const errorText = await res.text()
-                
                 try {
                     const errorData = JSON.parse(errorText)
-                    const errorMessage = errorData.error?.message || errorData.message || 'Invalid credentials'
-                    toast.error(`❌ Login Failed: ${errorMessage}`)
+                    toast.error(errorData.error?.message || 'Invalid credentials')
                 } catch (e) {
-                    toast.error(`❌ Server Error (${res.status}): ${errorText}`)
+                    toast.error('Server error')
                 }
                 return
             }
 
             const data = await res.json()
             
-            // ✅ Verify user has authenticated role
-            console.log('✅ Login successful')
-            console.log('👤 User role:', data.user?.role?.name || 'N/A')
-            
-            if (data.user?.role?.type === 'public') {
-                toast.error('⚠️ Account tidak memiliki role Authenticated. Hubungi admin.')
-                return
-            }
-
-            // Save token to cookie
             Cookies.set('token', data.jwt, { 
                 expires: 7, 
                 secure: process.env.NODE_ENV === 'production',
@@ -136,20 +113,19 @@ export const AuthProvider = ({ children }) => {
             })
             
             setUser(data.user)
-            toast.success('🎉 Login successful!')
+            toast.success('Login successful')
             router.push('/account/dashboard')
 
         } catch (err) {
-            console.error('🔥 Login error:', err)
-            toast.error(`❌ Network error: ${err.message}`)
+            console.error(err)
+            toast.error('Network error')
         }
     }
 
-    // Logout user
     const logout = async () => {
         Cookies.remove('token')
         setUser(null)
-        toast.success('👋 Logged out successfully')
+        toast.success('Logged out successfully')
         router.push('/')
     }
 

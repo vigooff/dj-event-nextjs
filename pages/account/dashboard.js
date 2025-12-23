@@ -1,40 +1,47 @@
 import { parseCookies } from '@/helpers/index'
+import { useRouter } from 'next/router'
+import { toast } from 'react-toastify'
 import Layout from '@/components/Layout'
 import DashboardEvent from '@/components/DashboardEvent'
 import { API_URL } from '@/config/index'
 import styles from '@/styles/Dashboard.module.css'
-import { toast } from 'react-toastify'
-import { useRouter } from 'next/router'
 
 export default function DashboardPage({ events, token }) {
   const router = useRouter()
 
   const deleteEvent = async (id) => {
-    if (!confirm('Are you sure?')) return
+    if (confirm('Apakah Anda yakin ingin menghapus event ini?')) {
+      const res = await fetch(`${API_URL}/api/events/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-    const res = await fetch(`${API_URL}/api/events/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+      const data = await res.json()
 
-    if (!res.ok) {
-      toast.error('Failed to delete event')
-      return
+      if (!res.ok) {
+        toast.error(data.error?.message || 'Gagal menghapus event')
+      } else {
+        toast.success('Event berhasil dihapus')
+        router.reload()
+      }
     }
-
-    router.reload()
   }
 
   return (
     <Layout title="User Dashboard">
       <div className={styles.dash}>
         <h1>Dashboard</h1>
+        <h3>My Events</h3>
 
-        {events.length === 0 && <p>No events yet</p>}
+        {events && events.length === 0 && (
+          <p style={{ marginTop: '20px', fontStyle: 'italic' }}>
+            Belum ada event yang dibuat.
+          </p>
+        )}
 
-        {events.map((evt) => (
+        {events && events.map((evt) => (
           <DashboardEvent
             key={evt.id}
             evt={evt}
@@ -58,27 +65,28 @@ export async function getServerSideProps({ req }) {
     }
   }
 
-  const res = await fetch(`${API_URL}/api/events/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  try {
+    const res = await fetch(`${API_URL}/api/events/me`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
 
-  if (!res.ok) {
+    const data = await res.json()
+
+    // Strapi terkadang membungkus data dalam data.data atau langsung array
+    const events = data.data ? data.data : (Array.isArray(data) ? data : [])
+
     return {
-      redirect: {
-        destination: '/account/login',
-        permanent: false,
+      props: {
+        events,
+        token,
       },
     }
-  }
-
-  const events = await res.json()
-
-  return {
-    props: {
-      events,
-      token,
-    },
+  } catch (error) {
+    return {
+      props: { events: [], token },
+    }
   }
 }

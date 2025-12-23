@@ -1,24 +1,105 @@
 .event {
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px #ddd solid;
+  margin: 20px 0;
+  padding: 20px;
   background-color: #f4f4f4;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  gap: 20px;
+  border-radius: 5px;
+  box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden; /* Tambahan: cegah overflow anak ke luar */
 }
 
-.event h4 {
-  margin-bottom: 10px;
-  flex: 2;
+.img {
+  flex-shrink: 0;
+  width: 120px;
+  height: 80px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.info {
+  flex-grow: 1;           /* Ambil space yang tersedia */
+  flex-basis: 0;          /* Penting: mulai dari 0 biar tidak melebihi container */
+  min-width: 0;           /* Izinkan shrink dan potong teks kalau perlu */
+  overflow: hidden;       /* Potong teks panjang */
+}
+
+.info h4 {
+  margin: 0 0 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.info span {
+  font-size: 14px;
+  color: #666;
+}
+
+.actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 15px;
+  position: relative;
+  z-index: 10; /* Pastikan di atas segalanya */
 }
 
 .edit,
 .delete {
-  margin: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px; /* Area klik lebih besar */
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 90px; /* Biar ukuran konsisten */
+  justify-content: center;
+}
+
+.edit {
+  background-color: #e6f2ff;
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.edit:hover {
+  background-color: #cce5ff;
 }
 
 .delete {
-  color: red;
+  background-color: #ffe6e6;
+  color: #d9534f;
+}
+
+.delete:hover {
+  background-color: #ffcccc;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+  .event {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .info {
+    order: 2;
+  }
+
+  .actions {
+    order: 3;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .img {
+    order: 1;
+  }
 }

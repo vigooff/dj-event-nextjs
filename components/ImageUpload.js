@@ -7,22 +7,35 @@ export default function ImageUpload({ evtId, imageUploaded, token }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!image) {
+      alert('Please select an image first')
+      return
+    }
+
     const formData = new FormData()
     formData.append('files', image)
-    formData.append('ref', 'events')
+    formData.append('ref', 'api::event.event')
     formData.append('refId', evtId)
     formData.append('field', 'image')
 
-    const res = await fetch(`${API_URL}/upload`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    })
+    try {
+      const res = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
 
-    if (res.ok) {
-      imageUploaded()
+      if (res.ok) {
+        imageUploaded()
+      } else {
+        const errorData = await res.json()
+        console.error('Upload failed:', errorData)
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
     }
   }
 

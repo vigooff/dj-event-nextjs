@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import styles from '@/styles/EventMap.module.css'
 
 export default function EventMap({ evt }) {
-  // Pastikan window tersedia sebelum mendefinisikan icon
+  
   const icon = typeof window !== 'undefined' ? L.icon({
     iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
@@ -12,11 +12,10 @@ export default function EventMap({ evt }) {
     iconAnchor: [12, 41],
   }) : null
 
-  // Ambil data dari attributes jika menggunakan Strapi v4/v5
-  const lat = evt.attributes?.lat || evt.lat || -6.200000 
-  const lng = evt.attributes?.lng || evt.lng || 106.816666
-
-  // Jika kode dijalankan di server, jangan render Map dulu
+  
+  const lat = evt.lat ? parseFloat(evt.lat) : -6.200000 
+  const lng = evt.lng ? parseFloat(evt.lng) : 106.816666
+  
   if (typeof window === 'undefined') {
     return null
   }
